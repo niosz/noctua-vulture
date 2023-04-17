@@ -140,9 +140,9 @@ export class CA {
     ca.baseCAFolder = caFolder;
     ca.certsFolder = path.join(ca.baseCAFolder, "certs");
     ca.keysFolder = path.join(ca.baseCAFolder, "keys");
-    mkdirp.mkdirpNative.sync(ca.baseCAFolder);
-    mkdirp.mkdirpNative.sync(ca.certsFolder);
-    mkdirp.mkdirpNative.sync(ca.keysFolder);
+    mkdirp.mkdirpNativeSync(ca.baseCAFolder);
+    mkdirp.mkdirpNativeSync(ca.certsFolder);
+    mkdirp.mkdirpNativeSync(ca.keysFolder);
     async.series(
       [
         (callback) => {
