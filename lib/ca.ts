@@ -2,7 +2,7 @@ import FS from "fs";
 import path from "path";
 import Forge from "node-forge";
 const { pki, md } = Forge;
-import mkdirp from "mkdirp";
+import { mkdirp } from 'mkdirp'
 import async from "async";
 import ErrnoException = NodeJS.ErrnoException;
 
@@ -140,9 +140,9 @@ export class CA {
     ca.baseCAFolder = caFolder;
     ca.certsFolder = path.join(ca.baseCAFolder, "certs");
     ca.keysFolder = path.join(ca.baseCAFolder, "keys");
-    mkdirp.mkdirpNativeSync(ca.baseCAFolder);
-    mkdirp.mkdirpNativeSync(ca.certsFolder);
-    mkdirp.mkdirpNativeSync(ca.keysFolder);
+    mkdirp.sync(ca.baseCAFolder);
+    mkdirp.sync(ca.certsFolder);
+    mkdirp.sync(ca.keysFolder);
     async.series(
       [
         (callback) => {
