@@ -1,6 +1,6 @@
 import http = require("http");
 import https = require("https");
-import type CA from "../lib/ca";
+import type CA from "./lib/ca";
 import type WebSocket from "ws";
 import type { Server } from "https";
 import type { WebSocket as WebSocketType, WebSocketServer } from "ws";
@@ -349,6 +349,6 @@ declare namespace NoctuaVultureProxy {
   };
 }
 
-declare const NoctuaVultureProxy: HttpProxy.IProxyStatic;
+declare const NoctuaVultureProxy: NoctuaVultureProxy.IProxyStatic;
 export = NoctuaVultureProxy;
 export as namespace NoctuaVultureProxy;
