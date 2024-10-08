@@ -5,7 +5,7 @@ import type WebSocket from "ws";
 import type { Server } from "https";
 import type { WebSocket as WebSocketType, WebSocketServer } from "ws";
 
-declare namespace HttpMitmProxy {
+declare namespace NoctuaVultureProxy {
   export interface IProxyStatic {
     (): IProxy;
     /** mod to pass to the use() function: Gunzip response filter (uncompress gzipped content before onResponseData and compress back after)*/
@@ -19,7 +19,7 @@ declare namespace HttpMitmProxy {
     port?: number;
     /**host - The hostname or local address to listen on.*/
     host?: string;
-    /** - Path to the certificates cache directory (default: process.cwd() + '/.http-mitm-proxy')*/
+    /** - Path to the certificates cache directory (default: process.cwd() + '/CA')*/
     sslCaDir?: string;
     /**  - enable HTTP persistent connection*/
     keepAlive?: boolean;
@@ -29,7 +29,7 @@ declare namespace HttpMitmProxy {
     httpAgent?: http.Agent;
     /** - The https.Agent to use when making https requests. Useful for chaining proxys. (default: internal Agent) */
     httpsAgent?: https.Agent;
-    /** - force use of SNI by the client. Allow node-http-mitm-proxy to handle all HTTPS requests with a single internal server. */
+    /** - force use of SNI by the client. Allow handle all HTTPS requests with a single internal server. */
     forceSNI?: boolean;
     /** - The port or named socket for https server to listen on. (forceSNI must be enabled) */
     httpsPort?: number;
@@ -230,7 +230,7 @@ declare namespace HttpMitmProxy {
              onWebSocketError: function(ctx, err) {  },
              onWebSocketClose: function(ctx, code, message, callback) {  },
              });
-     node-http-mitm-proxy provide some ready to use modules:
+     provide some ready to use modules:
 
      Proxy.gunzip Gunzip response filter (uncompress gzipped content before onResponseData and compress back after)
      Proxy.wildcard Generates wilcard certificates by default (so less certificates are generated) */
@@ -349,6 +349,6 @@ declare namespace HttpMitmProxy {
   };
 }
 
-declare const HttpMitmProxy: HttpMitmProxy.IProxyStatic;
-export = HttpMitmProxy;
-export as namespace HttpMitmProxy;
+declare const NoctuaVultureProxy: HttpProxy.IProxyStatic;
+export = NoctuaVultureProxy;
+export as namespace NoctuaVultureProxy;

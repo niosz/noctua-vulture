@@ -1,15 +1,16 @@
+const DEBUG = (typeof process.env.VULTURE_DEBUG == "string" && process.env.VULTURE_DEBUG.toLowerCase().trim() == "true" ) ? true : false;
 import FS from "fs";
 import path from "path";
 import Forge from "node-forge";
 const { pki, md } = Forge;
-import { mkdirp } from 'mkdirp'
+import { mkdirp } from "mkdirp";
 import async from "async";
 import ErrnoException = NodeJS.ErrnoException;
 
 const CAattrs = [
   {
     name: "commonName",
-    value: "Noctua Proxy CA",
+    value: "NoctuaVultureCA",
   },
   {
     name: "countryName",
@@ -25,7 +26,7 @@ const CAattrs = [
   },
   {
     name: "organizationName",
-    value: "Noctua Proxy CA",
+    value: "Noctua Vulture CA",
   },
   {
     shortName: "OU",
@@ -84,11 +85,11 @@ const ServerAttrs = [
   },
   {
     name: "organizationName",
-    value: "Noctua Proxy CA",
+    value: "Noctua Vulture CA",
   },
   {
     shortName: "OU",
-    value: "Noctua Proxy Server Certificate",
+    value: "Noctua Vulture Server Certificate",
   },
 ];
 
@@ -196,7 +197,7 @@ export class CA {
       cert.validity.notBefore.setDate(cert.validity.notBefore.getDate() - 1);
       cert.validity.notAfter = new Date();
       cert.validity.notAfter.setFullYear(
-        cert.validity.notBefore.getFullYear() + 1
+        cert.validity.notBefore.getFullYear() + 10
       );
       cert.setSubject(CAattrs);
       cert.setIssuer(CAattrs);
@@ -282,7 +283,7 @@ export class CA {
     );
     certServer.validity.notAfter = new Date();
     certServer.validity.notAfter.setFullYear(
-      certServer.validity.notBefore.getFullYear() + 1
+      certServer.validity.notBefore.getFullYear() + 10
     );
     const attrsServer = ServerAttrs.slice(0);
     attrsServer.unshift({
@@ -313,7 +314,7 @@ export class CA {
       certPem,
       (error) => {
         if (error) {
-          console.error(
+          if (DEBUG) console.error(
             `Failed to save certificate to disk in ${self.certsFolder}`,
             error
           );
@@ -325,7 +326,7 @@ export class CA {
       keyPrivatePem,
       (error) => {
         if (error) {
-          console.error(
+          if (DEBUG) console.error(
             `Failed to save private key to disk in ${self.keysFolder}`,
             error
           );
@@ -337,7 +338,7 @@ export class CA {
       keyPublicPem,
       (error) => {
         if (error) {
-          console.error(
+          if (DEBUG) console.error(
             `Failed to save public key to disk in ${self.keysFolder}`,
             error
           );

@@ -1,3 +1,4 @@
+const DEBUG = (typeof process.env.VULTURE_DEBUG == "string" && process.env.VULTURE_DEBUG.toLowerCase().trim() == "true" ) ? true : false;
 import async from "async";
 import type { AddressInfo } from "net";
 import net from "net";
@@ -47,7 +48,7 @@ import type {
   OnWebSocketSendParams,
   IWebSocketCallback,
   OnRequestDataCallback,
-} from "../types";
+} from "./types";
 import type stream from "node:stream";
 export { wildcard, gunzip };
 
@@ -119,7 +120,7 @@ export class NoctuaVulture implements IProxy {
 
     this.options = options || {};
     this.httpPort = options.port || options.port === 0 ? options.port : 8080;
-    this.httpHost = options.host || "0.0.0.0";
+    this.httpHost = options.host || "localhost";
     this.timeout = options.timeout || 0;
     this.keepAlive = !!options.keepAlive;
     this.httpAgent =
@@ -131,9 +132,9 @@ export class NoctuaVulture implements IProxy {
         ? options.httpsAgent
         : new https.Agent({ keepAlive: this.keepAlive });
     this.forceSNI = !!options.forceSNI;
-    //DISABLE//if (this.forceSNI) {
-      //DISABLE//console.info("SNI enabled. Clients not supporting SNI may fail");
-    //DISABLE//}
+    if (this.forceSNI) {
+      if (DEBUG) console.info("SNI enabled. Clients not supporting SNI may fail");
+    }
     this.httpsPort = this.forceSNI ? options.httpsPort : undefined;
     this.sslCaDir =
       options.sslCaDir || path.resolve(process.cwd(), "CA");
@@ -158,7 +159,7 @@ export class NoctuaVulture implements IProxy {
         self._onError.bind(self, "HTTP_SERVER_ERROR", null)
       );
       self.wsServer.on("connection", (ws, req) => {
-        ws.upgradeReq = req;
+        Object.defineProperty(ws,"upgradeReq",{value:req});
         self._onWebSocketServerConnect.call(self, false, ws, req);
       });
       const listenOptions = {
@@ -168,7 +169,7 @@ export class NoctuaVulture implements IProxy {
       if (self.forceSNI) {
         // start the single HTTPS server now
         self._createHttpsServer({}, (port, httpsServer, wssServer) => {
-          //DISABLE//console.debug(`https server started on ${port}`);
+          if (DEBUG) console.debug(`https server started on ${port}`);
           self.httpsServer = httpsServer;
           self.wssServer = wssServer;
           self.httpsPort = port;
@@ -208,7 +209,7 @@ export class NoctuaVulture implements IProxy {
     const self = this;
     const wssServer = new WebSocketServer({ server: httpsServer });
     wssServer.on("connection", (ws, req) => {
-      ws.upgradeReq = req;
+      Object.defineProperty(ws,"upgradeReq",{value:req});
       self._onWebSocketServerConnect.call(self, true, ws, req);
     });
 
@@ -425,7 +426,7 @@ export class NoctuaVulture implements IProxy {
   // Since node 0.9.9, ECONNRESET on sockets are no longer hidden
   _onSocketError(socketDescription: string, err: NodeJS.ErrnoException) {
     if (err.errno === -54 || err.code === "ECONNRESET") {
-      //DISABLE//console.debug(`Got ECONNRESET on ${socketDescription}, ignoring.`);
+      if (DEBUG) console.debug(`Got ECONNRESET on ${socketDescription}, ignoring.`);
     } else {
       this._onError(`${socketDescription}_ERROR`, null, err);
     }
@@ -506,14 +507,14 @@ export class NoctuaVulture implements IProxy {
             conn.destroy();
           });
           conn.on("error", (err) => {
-            //DISABLE//console.error("Connection error:");
-            //DISABLE//console.error(err);
+            if (DEBUG) console.error("Connection error:");
+            if (DEBUG) console.error(err);
             conn.destroy();
           });
-          //DISABLE//socket.on("error", (err) => {
-            //DISABLE//console.error("Socket error:");
-            //DISABLE//console.error(err);
-          //DISABLE//});
+          socket.on("error", (err) => {
+            if (DEBUG) console.error("Socket error:");
+            if (DEBUG) console.error(err);
+          });
           socket.pipe(conn);
           conn.pipe(socket);
           socket.emit("data", head);
@@ -605,20 +606,22 @@ export class NoctuaVulture implements IProxy {
             }
             delete results.httpsOptions.hosts;
             if (self.forceSNI && !hostname.match(/^[\d.]+$/)) {
-              //DISABLE//console.debug(`creating SNI context for ${hostname}`);
+              if (DEBUG) console.debug(`creating SNI context for ${hostname}`);
               hosts.forEach((host) => {
                 self.httpsServer!.addContext(host, results.httpsOptions);
                 self.sslServers[host] = { port: Number(self.httpsPort) };
               });
               return callback(null, self.httpsPort);
             } else {
-              //DISABLE//console.debug(`starting server for ${hostname}`);
+              if (DEBUG) console.debug(`starting server for ${hostname}`);
               results.httpsOptions.hosts = hosts;
               try {
                 self._createHttpsServer(
                   results.httpsOptions,
                   (port, httpsServer, wssServer) => {
-                    //DISABLE//console.debug(`https server started for ${hostname} on ${port}`);
+                    if (DEBUG) console.debug(
+                      `https server started for ${hostname} on ${port}`
+                    );
                     const sslServer = {
                       server: httpsServer,
                       wsServer: wssServer,
@@ -668,15 +671,15 @@ export class NoctuaVulture implements IProxy {
           process.nextTick(sem.leave.bind(sem));
           self.sslServers[hostname] = {
             // @ts-ignore
-            port: self.sslServers[wildcardHost],
+            port: self.sslServers[wildcardHost].port,
           };
           return makeConnection(self.sslServers[hostname].port);
         }
         getHttpsServer(hostname, (err, port) => {
           process.nextTick(sem.leave.bind(sem));
           if (err) {
-            //DISABLE//console.error("Error getting HTTPs server");
-            //DISABLE//console.error(err);
+            if (DEBUG) console.error("Error getting HTTPs server");
+            if (DEBUG) console.error(err);
             return self._onError("OPEN_HTTPS_SERVER_ERROR", null, err);
           }
           return makeConnection(port);
@@ -716,8 +719,8 @@ export class NoctuaVulture implements IProxy {
   }
 
   _onError(kind: string, ctx: IContext | null, err: Error) {
-    //DISABLE//console.error(kind);
-    //DISABLE//console.error(err);
+    if (DEBUG) console.error(kind);
+    if (DEBUG) console.error(err);
 
     this.onErrorHandlers.forEach((handler) => handler(ctx, err, kind));
     if (ctx) {
@@ -866,21 +869,29 @@ export class NoctuaVulture implements IProxy {
     } else {
       url = upgradeReq.url;
     }
-    const ptosHeaders = {};
-    const ctopHeaders = upgradeReq.headers;
-    for (const key in ctopHeaders) {
-      if (key.indexOf("sec-websocket") !== 0) {
-        ptosHeaders[key] = ctopHeaders[key];
+    const proxyToServerHeaders= {};
+    const clientToProxyHeaders = upgradeReq.headers;
+    for (const header in clientToProxyHeaders) {
+      if (header.indexOf("sec-websocket") !== 0) {
+        proxyToServerHeaders[header] = clientToProxyHeaders[header];
       }
     }
+
+    let protocols: string[] = [];
+    if(clientToProxyHeaders["sec-websocket-protocol"]) {
+      protocols = clientToProxyHeaders["sec-websocket-protocol"].split(",").map((p) => p.trim());
+    }
+
     ctx.proxyToServerWebSocketOptions = {
       url,
+      protocols: protocols.length > 0 ? protocols : undefined,
       agent: ctx.isSSL ? self.httpsAgent : self.httpAgent,
-      headers: ptosHeaders,
+      headers: proxyToServerHeaders,
     };
     function makeProxyToServerWebSocket() {
       ctx.proxyToServerWebSocket = new WebSocket(
         ctx.proxyToServerWebSocketOptions!.url!,
+        ctx.proxyToServerWebSocketOptions?.protocols,
         ctx.proxyToServerWebSocketOptions
       );
       ctx.proxyToServerWebSocket.on(
@@ -1050,6 +1061,11 @@ export class NoctuaVulture implements IProxy {
           return self._onError("ON_RESPONSE_ERROR", ctx, err);
         }
         const servToProxyResp = ctx.serverToProxyResponse!;
+
+        if (servToProxyResp.headers["trailer"]) {
+          servToProxyResp.headers["transfer-encoding"] = "chunked";
+        }
+
         if (
           self.responseContentPotentiallyModified ||
           ctx.responseContentPotentiallyModified
