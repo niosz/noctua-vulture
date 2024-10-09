@@ -14,13 +14,17 @@ export interface IProxyStatic {
 }
 
 export interface IProxyOptions {
+  /**task - Cluster mode task identifier (1..tasks) (default:0)*/
+  task?: number;
+  /**tasks - Cluster mode tasks number (default:0)*/
+  tasks?: number;
   /**port - The port or named socket to listen on (default: 8080).*/
   port?: number;
   /**host - The hostname or local address to listen on.*/
   host?: string;
-  /** - Path to the certificates cache directory (default: process.cwd() + '/CA')*/
+  /** - Path to the certificates cache directory (default: process.cwd() + '/CA/sites')*/
   sslCaDir?: string;
-  /** - Path to the certificates cache directory (default: process.cwd() + '/CA')*/
+  /** - Path to the root certificates cache directory (default: process.cwd() + '/CA')*/
   sslCaRootDir?: string;
   /**  - enable HTTP persistent connection*/
   keepAlive?: boolean;
@@ -163,6 +167,8 @@ export type IProxy = ICallbacks & {
   httpsPort?: number;
   sslCaDir: string;
   sslCaRootDir: string;
+  task: number;
+  tasks: number;
   ca: CA;
 };
 

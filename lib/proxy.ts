@@ -72,6 +72,8 @@ export class NoctuaVulture implements IProxy {
   httpsPort?: number;
   httpsServer: Server | undefined;
   keepAlive!: boolean;
+  task: number;
+  tasks: number;
   onConnectHandlers: HandlerType<IProxy["onConnect"]>;
   onErrorHandlers: HandlerType<IProxy["onError"]>;
   onRequestDataHandlers: HandlerType<IProxy["onRequestData"]>;
@@ -114,6 +116,8 @@ export class NoctuaVulture implements IProxy {
     this.onResponseDataHandlers = [];
     this.onResponseEndHandlers = [];
     this.responseContentPotentiallyModified = false;
+    this.task = 0;
+    this.tasks = 0;
   }
 
   listen(options: IProxyOptions, callback: ErrorCallback = () => undefined) {
@@ -138,9 +142,11 @@ export class NoctuaVulture implements IProxy {
     }
     this.httpsPort = this.forceSNI ? options.httpsPort : undefined;
     this.sslCaDir =
-      options.sslCaDir || path.resolve(process.cwd(), "CA");
+      options.sslCaDir || path.resolve(process.cwd(), "CA/sites");
     this.sslCaRootDir =
       options.sslCaRootDir || path.resolve(process.cwd(), "CA");
+    this.task = options.task || 0;
+    this.tasks = options.tasks || 0;
     ca.create(this.sslCaDir,this.sslCaRootDir, (err, ca) => {
       if (err) {
         return callback(err);
@@ -221,6 +227,7 @@ export class NoctuaVulture implements IProxy {
     const listenOptions = {
       port: 0,
       host: "0.0.0.0",
+      exclusive: true
     };
     if (this.httpsPort && !options.hosts) {
       listenOptions.port = this.httpsPort;
