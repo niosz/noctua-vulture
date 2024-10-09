@@ -89,6 +89,7 @@ export class NoctuaVulture implements IProxy {
   options!: IProxyOptions;
   responseContentPotentiallyModified: boolean;
   sslCaDir!: string;
+  sslCaRootDir!: string;
   sslSemaphores: Record<string, semaphore.Semaphore> = {};
   sslServers: Record<string, IProxySSLServer> = {};
   timeout!: number;
@@ -138,7 +139,9 @@ export class NoctuaVulture implements IProxy {
     this.httpsPort = this.forceSNI ? options.httpsPort : undefined;
     this.sslCaDir =
       options.sslCaDir || path.resolve(process.cwd(), "CA");
-    ca.create(this.sslCaDir, (err, ca) => {
+    this.sslCaRootDir =
+      options.sslCaRootDir || path.resolve(process.cwd(), "CA");
+    ca.create(this.sslCaDir,this.sslCaRootDir, (err, ca) => {
       if (err) {
         return callback(err);
       }

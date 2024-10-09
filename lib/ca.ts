@@ -133,21 +133,30 @@ export class CA {
   baseCAFolder!: string;
   certsFolder!: string;
   keysFolder!: string;
+  baseCARootFolder!: string;
+  certsRootFolder!: string;
+  keysRootFolder!: string;
   CAcert!: ReturnType<typeof Forge.pki.createCertificate>;
   CAkeys!: ReturnType<typeof Forge.pki.rsa.generateKeyPair>;
 
-  static create(caFolder, callback) {
+  static create(caFolder, caRootFolder, callback) {
     const ca = new CA();
     ca.baseCAFolder = caFolder;
     ca.certsFolder = path.join(ca.baseCAFolder, "certs");
     ca.keysFolder = path.join(ca.baseCAFolder, "keys");
+    ca.baseCARootFolder = caRootFolder;
+    ca.certsRootFolder = path.join(ca.baseCARootFolder, "certs");
+    ca.keysRootFolder = path.join(ca.baseCARootFolder, "keys");
     mkdirp.sync(ca.baseCAFolder);
     mkdirp.sync(ca.certsFolder);
     mkdirp.sync(ca.keysFolder);
+    mkdirp.sync(ca.baseCARootFolder);
+    mkdirp.sync(ca.certsRootFolder);
+    mkdirp.sync(ca.keysRootFolder);
     async.series(
       [
         (callback) => {
-          const exists = FS.existsSync(path.join(ca.certsFolder, "ca.pem"));
+          const exists = FS.existsSync(path.join(ca.certsRootFolder, "ca.pem"));
           if (exists) {
             ca.loadCA(callback);
           } else {
@@ -208,17 +217,17 @@ export class CA {
       const tasks = [
         FS.writeFile.bind(
           null,
-          path.join(self.certsFolder, "ca.pem"),
+          path.join(self.certsRootFolder, "ca.pem"),
           pki.certificateToPem(cert)
         ),
         FS.writeFile.bind(
           null,
-          path.join(self.keysFolder, "ca.private.key"),
+          path.join(self.keysRootFolder, "ca.private.key"),
           pki.privateKeyToPem(keys.privateKey)
         ),
         FS.writeFile.bind(
           null,
-          path.join(self.keysFolder, "ca.public.key"),
+          path.join(self.keysRootFolder, "ca.public.key"),
           pki.publicKeyToPem(keys.publicKey)
         ),
       ];
@@ -231,18 +240,18 @@ export class CA {
     async.auto(
       {
         certPEM(callback) {
-          FS.readFile(path.join(self.certsFolder, "ca.pem"), "utf-8", callback);
+          FS.readFile(path.join(self.certsRootFolder, "ca.pem"), "utf-8", callback);
         },
         keyPrivatePEM(callback) {
           FS.readFile(
-            path.join(self.keysFolder, "ca.private.key"),
+            path.join(self.keysRootFolder, "ca.private.key"),
             "utf-8",
             callback
           );
         },
         keyPublicPEM(callback) {
           FS.readFile(
-            path.join(self.keysFolder, "ca.public.key"),
+            path.join(self.keysRootFolder, "ca.public.key"),
             "utf-8",
             callback
           );
@@ -350,7 +359,7 @@ export class CA {
   }
 
   getCACertPath() {
-    return `${this.certsFolder}/ca.pem`;
+    return `${this.certsRootFolder}/ca.pem`;
   }
 }
 

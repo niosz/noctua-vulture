@@ -20,6 +20,8 @@ export interface IProxyOptions {
   host?: string;
   /** - Path to the certificates cache directory (default: process.cwd() + '/CA')*/
   sslCaDir?: string;
+  /** - Path to the certificates cache directory (default: process.cwd() + '/CA')*/
+  sslCaRootDir?: string;
   /**  - enable HTTP persistent connection*/
   keepAlive?: boolean;
   /**  - The number of milliseconds of inactivity before a socket is presumed to have timed out. Defaults to no timeout. */
@@ -160,6 +162,7 @@ export type IProxy = ICallbacks & {
   forceSNI: boolean;
   httpsPort?: number;
   sslCaDir: string;
+  sslCaRootDir: string;
   ca: CA;
 };
 
