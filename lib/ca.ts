@@ -10,7 +10,7 @@ import ErrnoException = NodeJS.ErrnoException;
 const CAattrs = [
   {
     name: "commonName",
-    value: "NoctuaVultureCA",
+    value: "NoctuaCA",
   },
   {
     name: "countryName",
@@ -26,11 +26,11 @@ const CAattrs = [
   },
   {
     name: "organizationName",
-    value: "Noctua Vulture CA",
+    value: "Noctua",
   },
   {
     shortName: "OU",
-    value: "Noctua Vulture CA",
+    value: "CA",
   },
 ];
 
@@ -85,7 +85,7 @@ const ServerAttrs = [
   },
   {
     name: "organizationName",
-    value: "Noctua Vulture CA",
+    value: "Noctua",
   },
   {
     shortName: "OU",
@@ -197,7 +197,7 @@ export class CA {
       cert.validity.notBefore.setDate(cert.validity.notBefore.getDate() - 1);
       cert.validity.notAfter = new Date();
       cert.validity.notAfter.setFullYear(
-        cert.validity.notBefore.getFullYear() + 10
+        cert.validity.notBefore.getFullYear() + 2
       );
       cert.setSubject(CAattrs);
       cert.setIssuer(CAattrs);
@@ -283,7 +283,7 @@ export class CA {
     );
     certServer.validity.notAfter = new Date();
     certServer.validity.notAfter.setFullYear(
-      certServer.validity.notBefore.getFullYear() + 10
+      certServer.validity.notBefore.getFullYear() + 2
     );
     const attrsServer = ServerAttrs.slice(0);
     attrsServer.unshift({
