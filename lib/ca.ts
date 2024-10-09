@@ -10,7 +10,7 @@ import ErrnoException = NodeJS.ErrnoException;
 const CAattrs = [
   {
     name: "commonName",
-    value: "Noctua Vulture CA",
+    value: "NoctuaVultureCA",
   },
   {
     name: "countryName",
